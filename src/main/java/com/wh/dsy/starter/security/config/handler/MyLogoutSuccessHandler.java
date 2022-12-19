@@ -16,6 +16,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Objects;
 
 @Component
 @Slf4j
@@ -32,10 +33,17 @@ public class MyLogoutSuccessHandler implements LogoutSuccessHandler {
             CommonUtils.response(response, HttpStatus.UNAUTHORIZED.value(), "注销失败：未认证用户！");
         } else {
             String username = JwtTokenUtils.getUsernameFromToken(token);
-            String key = Constants.TOKEN_CACHE_KEY + token;
-            if (redisService.hasKey(key)) {
-                redisService.deleteObject(key);
-                log.info("时间:{},IP:{},用户名{}注销成功", CommonUtils.getCurrentDateTime(), CommonUtils.getIPAddress(request), username);
+            String userId = JwtTokenUtils.getUserIdFromToken(token);
+            String key = Constants.TOKEN_CACHE_KEY + userId;
+            Object cacheObject = redisService.getCacheObject(key);
+            if (Objects.nonNull(cacheObject)) {
+                if (token.equals(cacheObject.toString())){
+                    redisService.deleteObject(key);
+                    log.info("时间:{},IP:{},用户名{}注销成功", CommonUtils.getCurrentDateTime(), CommonUtils.getIPAddress(request), username);
+                    CommonUtils.response(response, HttpStatus.OK.value(), "注销成功！");
+                }else {
+                    CommonUtils.response(response, HttpStatus.UNAUTHORIZED.value(), "注销失败：token无效！");
+                }
             } else {
                 CommonUtils.response(response, HttpStatus.UNAUTHORIZED.value(), "注销失败：未登录用户！");
             }

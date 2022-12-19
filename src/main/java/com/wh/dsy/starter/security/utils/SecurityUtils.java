@@ -1,5 +1,6 @@
 package com.wh.dsy.starter.security.utils;
 
+import com.wh.dsy.starter.security.entity.User;
 import com.wh.dsy.starter.security.entity.model.MyAuthenticatioToken;
 import com.wh.dsy.starters.redis.service.RedisService;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -12,7 +13,6 @@ import javax.servlet.http.HttpServletRequest;
 
 /**
  * Security相关操作
- *
  */
 public class SecurityUtils {
 
@@ -50,6 +50,22 @@ public class SecurityUtils {
     }
 
     /**
+     * 获取当前用户id
+     * @return
+     */
+    public static String getUserId() {
+        String userId = null;
+        Authentication authentication = getAuthentication();
+        if (authentication != null) {
+            Object principal = authentication.getPrincipal();
+            if (principal != null && principal instanceof User) {
+                userId = ((User) principal).getId();
+            }
+        }
+        return userId;
+    }
+
+    /**
      * 获取当前用户名
      *
      * @return
@@ -80,6 +96,17 @@ public class SecurityUtils {
             }
         }
         return username;
+    }
+
+    public static String getUserId(Authentication authentication) {
+        String userId = null;
+        if (authentication != null) {
+            Object principal = authentication.getPrincipal();
+            if (principal != null && principal instanceof User) {
+                userId = ((User) principal).getId();
+            }
+        }
+        return userId;
     }
 
     /**

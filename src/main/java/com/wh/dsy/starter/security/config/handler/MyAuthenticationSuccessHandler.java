@@ -38,11 +38,12 @@ public class MyAuthenticationSuccessHandler implements AuthenticationSuccessHand
         resp.put("status", HttpStatus.OK.value());
         resp.put("msg", "登录成功!");
         Object principal = authentication.getPrincipal();
-        ((User) principal).setPassword(null);
+        User user = (User) principal;
+        user.setPassword(null);
         String token = JwtTokenUtils.generateToken(authentication);
-        ((User) principal).setToken(token);
-        resp.put("user", principal);
-        redisService.setCacheObject(Constants.TOKEN_CACHE_KEY + token, principal, Constants.EXPIRE_TIME, TimeUnit.MILLISECONDS);
+        user.setToken(token);
+        resp.put("user", user);
+        redisService.setCacheObject(Constants.TOKEN_CACHE_KEY + user.getId(), token, Constants.EXPIRE_TIME, TimeUnit.MILLISECONDS);
         log.info("时间:{},IP:{},登陆用户名{}登录成功", CommonUtils.getCurrentDateTime(), CommonUtils.getIPAddress(request), CommonUtils.usernameThreadLocal.get());
         CommonUtils.usernameThreadLocal.remove();
         ObjectMapper om = new ObjectMapper();

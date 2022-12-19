@@ -28,7 +28,7 @@ public class MyJwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
         if (!request.getServletPath().startsWith("/actuator")) {
-            log.info("MyJwtAuthenticationFilter==============doFilterInternal=====" + request.getServletPath());
+            log.info("===================" + request.getServletPath() + "===================");
         }
         // 获取token, 并检查登录状态
         SecurityUtils.checkAuthentication(request, redisService);

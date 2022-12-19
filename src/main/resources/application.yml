@@ -22,3 +22,11 @@ spring:
     port: 6379
 
 
+logging:
+  level:
+    org:
+      springframework:
+        data:
+          neo4j: DEBUG
+  file:
+    name: ./logs/modelservice.log

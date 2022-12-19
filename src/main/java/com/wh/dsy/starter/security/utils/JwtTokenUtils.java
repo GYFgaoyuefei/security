@@ -1,13 +1,13 @@
 package com.wh.dsy.starter.security.utils;
 
 import com.wh.dsy.starter.security.entity.User;
-import com.wh.dsy.starter.security.entity.model.MyAuthenticatioToken;
 import com.wh.dsy.starter.security.entity.model.GrantedAuthorityImpl;
 import com.wh.dsy.starters.redis.common.Constants;
 import com.wh.dsy.starters.redis.service.RedisService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -32,6 +32,10 @@ public class JwtTokenUtils implements Serializable {
      */
     private static final String CREATED = "created";
     /**
+     * 用户id
+     */
+    private static final String USER_ID = "userId";
+    /**
      * 权限列表
      */
     private static final String AUTHORITIES = "authorities";
@@ -49,6 +53,7 @@ public class JwtTokenUtils implements Serializable {
      */
     public static String generateToken(Authentication authentication) {
         Map<String, Object> claims = new HashMap<>(3);
+        claims.put(USER_ID, SecurityUtils.getUserId(authentication));
         claims.put(USERNAME, SecurityUtils.getUsername(authentication));
         claims.put(CREATED, new Date());
         claims.put(AUTHORITIES, authentication.getAuthorities());
@@ -64,6 +69,27 @@ public class JwtTokenUtils implements Serializable {
     private static String generateToken(Map<String, Object> claims) {
         Date expirationDate = new Date(System.currentTimeMillis() + Constants.EXPIRE_TIME);
         return Jwts.builder().setClaims(claims).setExpiration(expirationDate).signWith(SignatureAlgorithm.HS512, SECRET).compact();
+    }
+
+
+    /**
+     * 从令牌中获取用户id
+     *
+     * @param token
+     * @return
+     */
+    public static String getUserIdFromToken(String token) {
+        String userId = null;
+        try {
+            Claims claims = getClaimsFromToken(token);
+            Object o = claims.get(USER_ID);
+            if (Objects.nonNull(o)) {
+                userId = o.toString();
+            }
+        } catch (Exception e) {
+            userId = null;
+        }
+        return userId;
     }
 
     /**
@@ -95,9 +121,19 @@ public class JwtTokenUtils implements Serializable {
         String token = JwtTokenUtils.getToken(request);
 
         if (token != null) {
-            //缓存中没有了说明点了登出
-            if (!redisService.hasKey(Constants.TOKEN_CACHE_KEY + token)) {
+            String userIdFromToken = JwtTokenUtils.getUserIdFromToken(token);
+            if (StringUtils.isBlank(userIdFromToken)) {
                 return null;
+            }
+            //缓存中没有了说明点了登出
+            Object cacheObject = redisService.getCacheObject(Constants.TOKEN_CACHE_KEY + userIdFromToken);
+            if (Objects.isNull(cacheObject)) {
+                return null;
+            } else {
+                //如果缓存的token与请求token不同，说明请求token已无效
+                if (!token.equals(cacheObject.toString())) {
+                    return null;
+                }
             }
             // 请求令牌不能为空
             if (SecurityUtils.getAuthentication() == null) {
@@ -108,6 +144,10 @@ public class JwtTokenUtils implements Serializable {
                 }
                 String username = claims.getSubject();
                 if (username == null) {
+                    return null;
+                }
+                Object userId = claims.get(USER_ID);
+                if (userId == null) {
                     return null;
                 }
                 if (isTokenExpired(token)) {
@@ -121,6 +161,7 @@ public class JwtTokenUtils implements Serializable {
                     }
                 }
                 User user = new User();
+                user.setId(userId.toString());
                 user.setToken(token);
                 user.setUsername(username);
                 authentication = new UsernamePasswordAuthenticationToken(user, null, authorities);
