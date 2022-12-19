@@ -1,7 +1,7 @@
 package com.wh.dsy.starter.security.config;
 
-import com.wh.dsy.starter.security.entity.Menu;
-import com.wh.dsy.starter.security.service.MenuService;
+import com.wh.dsy.starter.security.entity.UrlResource;
+import com.wh.dsy.starter.security.service.UrlResourceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.ConfigAttribute;
 import org.springframework.security.access.SecurityConfig;
@@ -19,7 +19,7 @@ import java.util.List;
 @Component
 public class CustomSecurityMetadataSource implements FilterInvocationSecurityMetadataSource {
     @Autowired
-    MenuService menuService;
+    UrlResourceService urlResourceService;
 
     AntPathMatcher antPathMatcher = new AntPathMatcher();
 
@@ -33,11 +33,11 @@ public class CustomSecurityMetadataSource implements FilterInvocationSecurityMet
         //先提取出当前的URL地址
         String requestURI = ((FilterInvocation) object).getRequest().getRequestURI();
         //查询出所有菜单数据，每条数据都包含着访问该条记录所需要的权限
-        List<Menu> allMenu = menuService.getAllMenu();
+        List<UrlResource> allUrlResource = urlResourceService.getAllUrlResource();
         //遍历，如果当前请求的URL地址和菜单中的某一条记录的pattern属性匹配上了，那么就可以获取当前请求所需要的权限
-        for (Menu menu : allMenu) {
-            if (antPathMatcher.match(menu.getPattern(), requestURI)) {
-                String[] roles = menu.getRoles().stream().map(r -> r.getName()).toArray(String[]::new);
+        for (UrlResource urlResource : allUrlResource) {
+            if (antPathMatcher.match(urlResource.getPattern(), requestURI)) {
+                String[] roles = urlResource.getRoles().stream().map(r -> r.getName()).toArray(String[]::new);
                 return SecurityConfig.createList(roles);
             }
         }

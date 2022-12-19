@@ -9,7 +9,7 @@ import java.util.List;
 
 @Mapper
 public interface UserMapper {
-    List<Role> getUserRoleByUid(Integer uid);
+    List<Role> getUserRoleByUid(String uid);
 
     User loadUserByUsername(String username);
 

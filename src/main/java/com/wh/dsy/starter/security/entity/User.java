@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
  * 用户
  */
 public class User implements UserDetails {
-    private Integer id;
+    private String id;
     private String password;
     private String username;
     private String token;
@@ -55,7 +55,7 @@ public class User implements UserDetails {
         return enabled;
     }
 
-    public void setId(Integer id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -79,7 +79,7 @@ public class User implements UserDetails {
         this.roles = roles;
     }
 
-    public Integer getId() {
+    public String getId() {
         return id;
     }
 

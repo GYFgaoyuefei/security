@@ -4,10 +4,10 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * 资源
+ * url资源
  */
-public class Menu implements Serializable {
-    private Integer id;
+public class UrlResource implements Serializable {
+    private String id;
     private String pattern;
     private List<Role> roles;
 
@@ -19,11 +19,11 @@ public class Menu implements Serializable {
         this.roles = roles;
     }
 
-    public Integer getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(String id) {
         this.id = id;
     }
 
