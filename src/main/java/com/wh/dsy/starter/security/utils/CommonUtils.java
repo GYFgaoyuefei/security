@@ -1,8 +1,14 @@
 package com.wh.dsy.starter.security.utils;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 常用工具类
@@ -64,12 +70,32 @@ public class CommonUtils {
      * @return
      */
     public static String getCurrentDateTime() {
-        return formatDateToStr(new Date(),STANDARD);
+        return formatDateToStr(new Date(), STANDARD);
     }
 
 
     public static String formatDateToStr(Date date, String pattern) {
         SimpleDateFormat sformat = new SimpleDateFormat(pattern);
         return sformat.format(date);
+    }
+
+
+    /**
+     * 返回信息设置
+     *
+     * @param response
+     * @param statusCode
+     * @param responseMsg
+     * @throws IOException
+     */
+    public static void response(HttpServletResponse response, int statusCode, String responseMsg) throws IOException {
+        response.setContentType("application/json;charset=utf-8");
+        response.setStatus(statusCode);
+        Map<String, Object> resp = new HashMap<>();
+        resp.put("status", statusCode);
+        resp.put("msg", responseMsg);
+        ObjectMapper om = new ObjectMapper();
+        String s = om.writeValueAsString(resp);
+        response.getWriter().write(s);
     }
 }
