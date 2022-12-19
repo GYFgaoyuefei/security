@@ -2,6 +2,7 @@ package com.wh.dsy.starter.security.config.handler;
 
 import com.wh.dsy.starter.security.utils.CommonUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.stereotype.Component;
@@ -28,6 +29,6 @@ public class MyAuthenticationFailureHandler implements AuthenticationFailureHand
         } else {
             responseMsg = exception.getMessage();
         }
-        CommonUtils.response(response, 401, responseMsg);
+        CommonUtils.response(response, HttpStatus.UNAUTHORIZED.value(), responseMsg);
     }
 }

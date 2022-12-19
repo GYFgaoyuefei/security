@@ -7,6 +7,7 @@ import com.wh.dsy.starters.redis.service.RedisService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.stereotype.Component;
@@ -28,7 +29,7 @@ public class MyLogoutSuccessHandler implements LogoutSuccessHandler {
 
         String token = JwtTokenUtils.getToken(request);
         if (StringUtils.isBlank(token)) {
-            CommonUtils.response(response, 401, "注销失败：未认证用户！");
+            CommonUtils.response(response, HttpStatus.UNAUTHORIZED.value(), "注销失败：未认证用户！");
         } else {
             String username = JwtTokenUtils.getUsernameFromToken(token);
             String key = Constants.TOKEN_CACHE_KEY + token;
@@ -36,7 +37,7 @@ public class MyLogoutSuccessHandler implements LogoutSuccessHandler {
                 redisService.deleteObject(key);
                 log.info("时间:{},IP:{},用户名{}注销成功", CommonUtils.getCurrentDateTime(), CommonUtils.getIPAddress(request), username);
             } else {
-                CommonUtils.response(response, 401, "注销失败：未登录用户！");
+                CommonUtils.response(response, HttpStatus.UNAUTHORIZED.value(), "注销失败：未登录用户！");
             }
 
         }
